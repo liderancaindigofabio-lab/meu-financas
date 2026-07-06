@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' https:; img-src 'self' data: blob: https:; media-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'">
+<meta http-equiv="X-Content-Type-Options" content="nosniff">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<meta name="theme-color" content="#f59e0b">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="MeuFinanças">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="application-name" content="MeuFinanças">
+<meta name="description" content="Gestão financeira pessoal e da academia Aroeira G Fitness">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="apple-touch-icon" sizes="152x152" href="apple-touch-icon-152.png">
+<link rel="apple-touch-icon" sizes="167x167" href="apple-touch-icon-167.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<title>MeuFinanças - Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
+<script>if (window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';</script>
+<script src="https://cdn.pluggy.ai/pluggy-connect/v1.3.0/pluggy-connect.js"></script>
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="dash-body">
+
+<!-- SIDEBAR -->
+<!-- Overlay escuro (fecha sidebar ao tocar fora) -->
+<div class="sidebar-overlay" onclick="document.querySelector('.sidebar').classList.remove('open'); this.classList.remove('open');"></div>
+
+<aside class="sidebar">
+    <div class="sidebar-logo">
+        <div class="logo-icon">💰</div>
+        <span>MeuFinanças</span>
+    </div>
+    <nav class="sidebar-nav">
+        <a class="nav-item active" data-tab="overview" onclick="abrirTab('overview', this)">
+            <span class="ico">📊</span> Visão Geral
+        </a>
+        <a class="nav-item" data-tab="transactions" onclick="abrirTab('transactions', this)">
+            <span class="ico">💸</span> Transações
+        </a>
+        <a class="nav-item" data-tab="budgets" onclick="abrirTab('budgets', this)">
+            <span class="ico">🎯</span> Orçamentos
+        </a>
+        <a class="nav-item" data-tab="goals" onclick="abrirTab('goals', this)">
+            <span class="ico">🏆</span> Metas
+        </a>
+        <a class="nav-item" data-tab="categories" onclick="abrirTab('categories', this)">
+            <span class="ico">🏷️</span> Categorias
+        </a>
+        <a class="nav-item" data-tab="rules" onclick="abrirTab('rules', this)">
+            <span class="ico">🔮</span> Regras Auto
+        </a>
+        <a class="nav-item" data-tab="banks" onclick="abrirTab('banks', this)">
+            <span class="ico">🏦</span> Bancos
+        </a>
+        <a class="nav-item" data-tab="cards" onclick="abrirTab('cards', this)">
+            <span class="ico">💳</span> Cartões
+        </a>
+        <a class="nav-item" data-tab="commitments" onclick="abrirTab('commitments', this)">
+            <span class="ico">📅</span> Despesas Futuras
+        </a>
+        <a class="nav-item" id="navUsers" data-tab="users" onclick="abrirTab('users', this)">
+            <span class="ico">👥</span> Usuários
+        </a>
+        <a class="nav-item" data-tab="config" onclick="abrirTab('config', this)">
+            <span class="ico">⚙️</span> Configurações
+        </a>
+    </nav>
+    <div class="sidebar-footer">
+        <button id="btnInstallPWA" onclick="instalarApp()" style="display:none; width:100%; padding:0.5rem; margin-bottom:0.5rem; background:linear-gradient(135deg,#f59e0b,#d97706); color:#000; border:none; border-radius:6px; font-weight:600; cursor:pointer; font-size:0.85rem;">📲 Instalar App</button>
+        <div class="user-mini">
+            <div class="user-avatar" id="userAvatar">F</div>
+            <div class="user-info">
+                <div class="user-name" id="userName">Fabio</div>
+                <div class="user-email" id="userEmail">fabio17dejesusjunior@gmail.com</div>
+            </div>
+        </div>
+        <button class="btn-logout" onclick="logout()">🚪 Sair</button>
+    </div>
+</aside>
+
+<!-- CONTEUDO -->
+<main class="main-content">
+    <header class="topbar">
+        <button class="menu-toggle" onclick="document.querySelector('.sidebar').classList.toggle('open'); document.querySelector('.sidebar-overlay').classList.toggle('open');" aria-label="Menu">☰</button>
+        <div>
+            <h1 id="pageTitle">Visão Geral</h1>
+            <p class="subtitle" id="pageSubtitle">Acompanhe suas finanças em tempo real</p>
+        </div>
+        <div class="topbar-actions">
+            <button class="btn-primary" onclick="abrirModalTransacao('receita')">+ Receita</button>
+            <button class="btn-secondary" onclick="abrirModalTransacao('despesa')">+ Despesa</button>
+        </div>
+    </header>
+
+    <!-- ABA: VISAO GERAL -->
+    <section class="tab-content active" id="tab-overview">
+        <div class="card" id="filaBox">
+            <!-- Fila de notificacoes renderizada via JS -->
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card stat-balance">
+                <div class="stat-label">💰 Saldo Total</div>
+                <div class="stat-value" id="statSaldo">R$ 0,00</div>
+                <div class="stat-trend" id="statSaldoTrend">—</div>
+            </div>
+            <div class="stat-card stat-income">
+                <div class="stat-label">📈 Receitas</div>
+                <div class="stat-value" id="statReceitas">R$ 0,00</div>
+                <div class="stat-trend" id="statReceitasTrend">—</div>
+            </div>
+            <div class="stat-card stat-expense">
+                <div class="stat-label">📉 Despesas</div>
+                <div class="stat-value" id="statDespesas">R$ 0,00</div>
+                <div class="stat-trend" id="statDespesasTrend">—</div>
+            </div>
+            <div class="stat-card stat-saving">
+                <div class="stat-label">🏦 Economia</div>
+                <div class="stat-value" id="statEconomia">R$ 0,00</div>
+                <div class="stat-trend" id="statEconomiaTrend">—</div>
+            </div>
+        </div>
+
+        <div class="charts-grid">
+            <div class="card">
+                <div class="card-header"><h3>📈 Resumo Financeiro (últimos 6 meses)</h3></div>
+                <div class="chart-wrap"><canvas id="chartLinha"></canvas></div>
+            </div>
+            <div class="card">
+                <div class="card-header"><h3>🍩 Distribuição de Despesas</h3></div>
+                <div class="chart-wrap"><canvas id="chartPizza"></canvas></div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3>🧾 Transações Recentes</h3>
+                <a class="link" onclick="abrirTab('transactions', document.querySelector('[data-tab=transactions]'))">Ver todas →</a>
+            </div>
+            <div id="listaTransacoesRecentes" class="tx-list"></div>
+        </div>
+    </section>
+
+    <!-- ABA: TRANSACOES -->
+    <section class="tab-content" id="tab-transactions">
+        <div class="card">
+            <div class="card-header">
+                <h3>💸 Todas as Transações</h3>
+                <div class="filters">
+                    <select id="filtroMes" onchange="renderTransacoes()">
+                        <option value="todos">Todos os meses</option>
+                    </select>
+                    <select id="filtroTipo" onchange="renderTransacoes()">
+                        <option value="todos">Todos os tipos</option>
+                        <option value="receita">Receitas</option>
+                        <option value="despesa">Despesas</option>
+                    </select>
+                    <input type="text" id="filtroBusca" placeholder="🔍 buscar..." oninput="renderTransacoes()">
+                </div>
+            </div>
+            <div id="listaTransacoes" class="tx-list"></div>
+        </div>
+    </section>
+
+    <!-- ABA: ORCAMENTOS -->
+    <section class="tab-content" id="tab-budgets">
+        <div class="card">
+            <div class="card-header">
+                <h3>🎯 Orçamentos Mensais</h3>
+                <button class="btn-primary btn-sm" onclick="abrirModalOrcamento()">+ Novo</button>
+            </div>
+            <div id="listaOrcamentos" class="budget-list"></div>
+        </div>
+    </section>
+
+    <!-- ABA: METAS -->
+    <section class="tab-content" id="tab-goals">
+        <div class="card">
+            <div class="card-header">
+                <h3>🏆 Metas de Economia</h3>
+                <button class="btn-primary btn-sm" onclick="abrirModalMeta()">+ Nova</button>
+            </div>
+            <div id="listaMetas" class="goal-list"></div>
+        </div>
+    </section>
+
+    <!-- ABA: CATEGORIAS -->
+    <section class="tab-content" id="tab-categories">
+        <div class="card">
+            <div class="card-header">
+                <h3>🏷️ Categorias</h3>
+                <button class="btn-primary btn-sm" onclick="abrirModalCategoria()">+ Nova</button>
+            </div>
+            <div id="listaCategorias" class="category-grid"></div>
+        </div>
+    </section>
+
+    <!-- ABA: REGRAS AUTOMATICAS -->
+    <section class="tab-content" id="tab-rules">
+        <div class="card">
+            <div class="card-header">
+                <h3>🔮 Regras Automáticas</h3>
+                <button class="btn-primary btn-sm" onclick="abrirModalRegra()">+ Nova Regra</button>
+            </div>
+            <p style="color:#94a3b8; font-size:0.9rem; margin-bottom:1rem;">
+                Quando você colar uma notificação de banco (ou lançar com texto livre), o sistema procura aqui e já aplica a categoria. <strong>Ex:</strong> "IFOOD" → 🍔 Alimentação
+            </p>
+            <div id="listaRegras" class="rule-list"></div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3>🤖 Categorização Inteligente</h3>
+                <span class="badge" id="badgeIA">Ativa</span>
+            </div>
+            <p style="color:#94a3b8; font-size:0.9rem; margin-bottom:1rem;">
+                Mesmo sem regra cadastrada, o sistema reconhece automaticamente mais de 80 estabelecimentos brasileiros (iFood, Uber, Shell, Netflix, etc). Veja a lista completa:
+            </p>
+            <button class="btn-secondary btn-sm" onclick="abrirModalListaIA()">📋 Ver lista de palavras-chave</button>
+        </div>
+    </section>
+
+    <!-- ABA: BANCOS CONECTADOS -->
+    <section class="tab-content" id="tab-banks">
+        <div class="card">
+            <div class="card-header">
+                <h3>🏦 Bancos Conectados (Open Finance)</h3>
+                <button class="btn-primary" onclick="abrirModalConectarBanco()">+ Conectar Banco</button>
+            </div>
+            <p style="color:#94a3b8; font-size:0.9rem; margin-bottom:1rem;">Conecte seus bancos via Open Finance pra puxar transações automaticamente, sem precisar de notificação. Funciona com Nubank, Inter, Itaú, Bradesco, Santander, BB, Caixa, C6, Mercado Pago, PicPay e mais de 200 bancos brasileiros.</p>
+            <div id="bancosBox"></div>
+        </div>
+    </section>
+
+    <!-- ABA: USUÁRIOS (só admin) -->
+    <section class="tab-content" id="tab-users">
+        <div class="card">
+            <div class="card-header">
+                <h3>👥 Gestão de Usuários</h3>
+                <p style="color:#94a3b8; font-size:0.85rem; margin:0;">Crie usuários que terão acesso ao app com as mesmas funções (transações, orçamentos, metas, importação, etc.). Cada um tem seus dados isolados.</p>
+            </div>
+            <div class="config-grid" style="grid-template-columns: 1fr 1fr 1fr; gap:1.5rem;">
+                <div>
+                    <h4>➕ Criar novo usuário</h4>
+                    <div style="display:flex; flex-direction:column; gap:0.6rem; margin-top:0.8rem;">
+                        <input id="novoUserNome" type="text" placeholder="Nome completo" style="padding:0.5rem; background:var(--bg); border:1px solid var(--border); color:var(--text); border-radius:6px;">
+                        <input id="novoUserEmail" type="email" placeholder="E-mail (será o login)" style="padding:0.5rem; background:var(--bg); border:1px solid var(--border); color:var(--text); border-radius:6px;">
+                        <input id="novoUserSenha" type="text" placeholder="Senha (mín. 4 caracteres)" style="padding:0.5rem; background:var(--bg); border:1px solid var(--border); color:var(--text); border-radius:6px;">
+                        <select id="novoUserPerfil" style="padding:0.5rem; background:var(--bg); border:1px solid var(--border); color:var(--text); border-radius:6px;">
+                            <option value="user">Usuário (acesso padrão)</option>
+                            <option value="admin">Admin (também gerencia usuários)</option>
+                        </select>
+                        <button onclick="criarNovoUsuario()" style="padding:0.6rem; background:linear-gradient(135deg,#10b981,#059669); color:white; border:none; border-radius:6px; font-weight:600; cursor:pointer;">➕ Criar usuário</button>
+                    </div>
+                </div>
+                <div>
+                    <h4>📋 Usuários cadastrados (<span id="totalUsers">0</span>)</h4>
+                    <div id="listaUsuarios" style="margin-top:0.8rem; max-height:500px; overflow-y:auto;"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ABA: CONFIG -->
+    <section class="tab-content" id="tab-config">
+        <div class="card">
+            <div class="card-header"><h3>⚙️ Configurações</h3></div>
+            <div class="config-grid">
+                <div>
+                    <h4>📱 Instalar como App no celular</h4>
+                    <p style="color:#94a3b8; font-size:0.9rem;">Adicione o MeuFinanças na tela inicial do seu celular. Funciona como app nativo, abre em tela cheia e fica disponível offline.</p>
+                    <div id="pwaStatus" style="background:var(--bg-card); border:1px solid var(--border); border-radius:8px; padding:0.8rem; margin:0.8rem 0; font-size:0.9rem;">
+                        <div>🔄 Verificando status...</div>
+                    </div>
+                    <button id="btnInstallPWA2" onclick="instalarApp()" style="display:none; width:100%; padding:0.7rem; background:linear-gradient(135deg,#f59e0b,#d97706); color:#000; border:none; border-radius:8px; font-weight:700; cursor:pointer; font-size:1rem; margin-bottom:0.5rem;">📲 Instalar App Agora</button>
+                    <details style="margin-top:0.5rem; color:#cbd5e1; font-size:0.85rem;">
+                        <summary style="cursor:pointer; color:#10b981;">📖 Como instalar manualmente</summary>
+                        <div style="margin-top:0.5rem; line-height:1.6;">
+                            <strong>Android (Chrome/Edge):</strong><br>
+                            1. Menu (3 pontos) → <em>Instalar app</em> ou <em>Adicionar à tela inicial</em><br><br>
+                            <strong>iPhone (Safari):</strong><br>
+                            1. Botão compartilhar (quadrado com seta) → <em>Adicionar à Tela de Início</em><br>
+                            ⚠️ No iPhone precisa ser pelo Safari (Chrome não suporta)
+                        </div>
+                    </details>
+                </div>
+                    <h4>👤 Perfil</h4>
+                    <div class="form-group">
+                        <label>Nome</label>
+                        <input type="text" id="cfgNome">
+                    </div>
+                    <div class="form-group">
+                        <label>E-mail</label>
+                        <input type="email" id="cfgEmail" disabled>
+                    </div>
+                    <button class="btn-primary" onclick="salvarPerfil()">💾 Salvar</button>
+                </div>
+                <div>
+                    <h4>🔐 Segurança</h4>
+                    <p style="color:#94a3b8; font-size:0.9rem;">Altere sua senha de acesso ao app.</p>
+                    <div class="form-group">
+                        <label>Senha atual</label>
+                        <input type="password" id="cfgSenhaAtual" placeholder="Digite sua senha atual" autocomplete="current-password">
+                    </div>
+                    <div class="form-group">
+                        <label>Nova senha</label>
+                        <input type="password" id="cfgSenhaNova" placeholder="Mínimo 4 caracteres" minlength="4" autocomplete="new-password">
+                    </div>
+                    <div class="form-group">
+                        <label>Confirmar nova senha</label>
+                        <input type="password" id="cfgSenhaConfirma" placeholder="Digite a nova senha de novo" minlength="4" autocomplete="new-password">
+                    </div>
+                    <button class="btn-primary" onclick="trocarSenha()">🔑 Trocar senha</button>
+                </div>
+                <div>
+                    <h4>☁️ Backup na Nuvem</h4>
+                    <p style="color:#94a3b8; font-size:0.9rem;">Seus dados são salvos automaticamente, criptografados com sua senha, no servidor do Render.</p>
+                    <div id="backupStatus" style="background:var(--bg-card); border:1px solid var(--border); border-radius:8px; padding:0.8rem; margin:0.8rem 0; font-size:0.9rem;">
+                        <div>🔄 Verificando...</div>
+                    </div>
+                    <div class="form-group" style="margin-top:0.5rem;">
+                        <label>Senha (pra criptografar)</label>
+                        <input type="password" id="cfgBackupSenha" placeholder="Sua senha de login" autocomplete="off">
+                    </div>
+                    <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+                        <button class="btn-primary" onclick="backupSalvar()" style="flex:1; min-width:140px;">☁️ Salvar agora</button>
+                        <button class="btn-primary" onclick="backupRestaurar()" style="flex:1; min-width:140px; background:linear-gradient(135deg,#10b981,#059669);">📥 Restaurar</button>
+                    </div>
+                    <button class="btn-primary" onclick="backupBaixar()" style="width:100%; margin-top:0.5rem; background:linear-gradient(135deg,#6366f1,#4f46e5);">💾 Baixar JSON local</button>
+                    <button class="btn-primary" onclick="backupImportar()" style="width:100%; margin-top:0.5rem; background:linear-gradient(135deg,#8b5cf6,#7c3aed);">📤 Importar JSON</button>
+                    <input type="file" id="backupFileInput" accept=".json" style="display:none;" onchange="backupImportarArquivo(event)">
+                </div>
+                <div>
+                    <h4>📲 Automação por Notificação (MacroDroid)</h4>
+                    <p style="color:#94a3b8; font-size:0.9rem;">Configure seu Android pra enviar notificações de banco direto pro app. URL do webhook:</p>
+                    <div class="webhook-box">
+                        <code id="webhookUrl">https://liderancaindigofabio-lab.github.io/meu-financas/fila.html?texto=NOTIFICACAO</code>
+                        <button class="btn-icon" onclick="copiarWebhook()" title="Copiar">📋</button>
+                    </div>
+                    <p style="color:#94a3b8; font-size:0.85rem; margin-top:0.5rem;">
+                        No MacroDroid, configure um HTTP GET substituindo <code>NOTIFICACAO</code> por <code>{notificacao}</code> ou <code>{text}</code>.
+                    </p>
+                    <details style="margin-top:1rem; color:#cbd5e1; font-size:0.9rem;">
+                        <summary style="cursor:pointer; color:#10b981;">📖 Como configurar o MacroDroid (passo a passo)</summary>
+                        <ol style="margin-top:0.5rem; padding-left:1.2rem; line-height:1.7;">
+                            <li>Instale o app <strong>MacroDroid</strong> (grátis) na Play Store</li>
+                            <li>Crie uma <strong>Macro</strong>: gatilho <em>"Notificação recebida"</em> com app <em>"Todos"</em> ou selecione seu banco (Nubank, Inter, Itaú, etc)</li>
+                            <li>Adicione uma ação: <em>"HTTP GET"</em></li>
+                            <li>Cole a URL acima, substituindo <code>NOTIFICACAO</code> por <code>{notificacao}</code> (o MacroDroid preenche com o texto)</li>
+                            <li>Marque a opção <em>"URL Encode"</em> se disponível</li>
+                            <li>Salve e ative a macro</li>
+                            <li>Quando chegar notificação de banco, ela vai pra <strong>Fila</strong> aqui no app pra você revisar</li>
+                        </ol>
+                        <p style="margin-top:0.5rem;"><strong>💡 Dica:</strong> adicione <code>&auto=1</code> no final da URL pra lançar automático quando a IA tiver confiança média/alta.</p>
+                    </details>
+                </div>
+                <div>
+                    <h4>🗑️ Zona de perigo</h4>
+                    <p style="color:#94a3b8; font-size:0.9rem;">Apaga TODAS as suas transações, orçamentos e metas. Esta ação não pode ser desfeita.</p>
+                    <button class="btn-danger" onclick="resetarTudo()">🗑️ Resetar tudo</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ABA: CARTOES -->
+    <section class="tab-content" id="tab-cards">
+        <div class="card">
+            <div class="card-header">
+                <h3>💳 Meus Cartões</h3>
+                <button class="btn-primary" onclick="abrirModalCartao()">+ Novo Cartão</button>
+            </div>
+            <div id="listaCartoes" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(320px, 1fr)); gap:1rem;"></div>
+        </div>
+    </section>
+
+    <!-- ABA: DESPESAS FUTURAS (COMPROMISSOS) -->
+    <section class="tab-content" id="tab-commitments">
+        <div class="card">
+            <div class="card-header">
+                <h3>📅 Despesas Futuras / Parceladas</h3>
+                <button class="btn-primary" onclick="abrirModalCompromisso()">+ Nova Despesa</button>
+            </div>
+            <p style="color:#94a3b8; font-size:0.85rem; margin-bottom:1rem;">
+                Compromissos parcelados ou de longo prazo que <strong>não estão no cartão</strong>. Ex: financiamento, consórcio, seguro anual, mensalidade de curso parcelada em 12x, etc.
+            </p>
+            <div class="filters" style="margin-bottom:1rem;">
+                <select id="filtroCompromissoStatus" onchange="renderCompromissos()">
+                    <option value="todos">Todos</option>
+                    <option value="ativo">Ativos</option>
+                    <option value="quitado">Quitados</option>
+                </select>
+            </div>
+            <div id="listaCompromissos"></div>
+        </div>
+    </section>
+</main>
+
+<!-- MODAL: LANCAR COM TEXTO LIVRE -->
+<div class="modal" id="modalLancarTexto">
+    <div class="modal-content">
+        <button class="modal-close" onclick="closeModal('modalLancarTexto')">×</button>
+        <h2>⚡ Lançar com Texto</h2>
+        <p style="color:#94a3b8; font-size:0.9rem;">
+            Cole o texto da notificação do seu banco. O sistema vai extrair valor, data, descrição e categoria automaticamente.
+        </p>
+        <div class="form-group">
+            <label>Cole a notificação aqui</label>
+            <textarea id="lancTexto" rows="4" placeholder="Ex: Nubank - Compra aprovada CARTÃO final 1234 IFOOD *IFOOD R$ 45,90 02/07 14:32"></textarea>
+        </div>
+        <div id="lancPreview" class="lanc-preview" style="display:none;">
+            <h4>📋 Detectado:</h4>
+            <div class="lanc-grid">
+                <div><strong>Tipo:</strong> <span id="lancTipoDetectado">—</span></div>
+                <div><strong>Valor:</strong> <span id="lancValorDetectado">—</span></div>
+                <div><strong>Descrição:</strong> <span id="lancDescDetectada">—</span></div>
+                <div><strong>Categoria:</strong> <span id="lancCatDetectada">—</span></div>
+                <div><strong>Data:</strong> <span id="lancDataDetectada">—</span></div>
+            </div>
+        </div>
+        <div class="modal-actions">
+            <button type="button" class="btn-secondary" onclick="closeModal('modalLancarTexto')">Cancelar</button>
+            <button type="button" class="btn-secondary" onclick="analisarTexto()">🔍 Analisar</button>
+            <button type="button" class="btn-primary" id="lancBtnSalvar" onclick="salvarLancamentoTexto()" disabled>💾 Lançar</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: REGRA -->
+<div class="modal" id="modalRegra">
+    <div class="modal-content">
+        <button class="modal-close" onclick="closeModal('modalRegra')">×</button>
+        <h2>Nova Regra Automática</h2>
+        <form onsubmit="return salvarRegra(event)">
+            <input type="hidden" id="regraId">
+            <div class="form-group">
+                <label>Quando o texto contiver</label>
+                <input type="text" id="regraPadrao" placeholder="Ex: IFOOD, UBER, SHELL..." required>
+                <small style="color:#94a3b8;">Pode colocar várias palavras separadas por vírgula. Casa em qualquer parte do texto (maiúscula ou minúscula).</small>
+            </div>
+            <div class="form-group">
+                <label>Considerar como</label>
+                <select id="regraTipo" onchange="atualizarCatRegra()" required>
+                    <option value="despesa">📉 Despesa</option>
+                    <option value="receita">📈 Receita</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Atribuir à categoria</label>
+                <select id="regraCategoria" required></select>
+            </div>
+            <div class="form-group">
+                <label>Descrição padrão (opcional)</label>
+                <input type="text" id="regraDescricao" placeholder="Se vazio, usa o que veio no texto">
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn-secondary" onclick="closeModal('modalRegra')">Cancelar</button>
+                <button type="submit" class="btn-primary">💾 Salvar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- MODAL: LISTA IA -->
+<div class="modal" id="modalListaIA">
+    <div class="modal-content modal-large">
+        <button class="modal-close" onclick="closeModal('modalListaIA')">×</button>
+        <h2>🤖 Palavras-chave Reconhecidas</h2>
+        <p style="color:#94a3b8; font-size:0.9rem;">Mesmo sem você cadastrar regra, o sistema reconhece estes termos automaticamente:</p>
+        <div id="listaIA" class="ia-list"></div>
+    </div>
+</div>
+
+<!-- MODAL: IMPORTAR EXTRATO -->
+<div class="modal" id="modalImportar">
+    <div class="modal-content">
+        <button class="modal-close" onclick="closeModal('modalImportar')">×</button>
+        <h2>📥 Importar extrato bancário</h2>
+        <p style="color:#94a3b8; font-size:0.9rem; margin-bottom:1rem;">3 jeitos de importar — escolhe o melhor pra você:</p>
+
+        <div style="background:rgba(16, 185, 129, 0.1); border:1px solid #10b981; border-radius:10px; padding:1rem; margin-bottom:1rem;">
+            <h3 style="margin:0 0 0.5rem; color:#10b981;">📊 Opção 1: Importar CSV ou Excel (mais fácil)</h3>
+            <p style="font-size:0.85rem; color:#94a3b8; margin:0 0 0.8rem;">No app do banco: exporte o extrato como <b>CSV</b> ou <b>Excel (.xlsx)</b> e selecione aqui.</p>
+            <button onclick="abrirImportCSV()" style="width:100%; padding:0.75rem; background:#10b981; color:#fff; border:none; border-radius:8px; font-weight:600; cursor:pointer;">📊 Selecionar arquivo CSV / Excel</button>
+        </div>
+
+        <div style="background:rgba(139, 92, 246, 0.1); border:1px solid #8b5cf6; border-radius:10px; padding:1rem; margin-bottom:1rem;">
+            <h3 style="margin:0 0 0.5rem; color:#8b5cf6;">📎 Opção 2: Soltar extrato (PDF ou foto)</h3>
+            <p style="font-size:0.85rem; color:#94a3b8; margin:0 0 0.8rem;">Arrasta ou seleciona o arquivo. Eu abro o <b>Zapia</b> já com o extrato pronto — você só confirma!</p>
+
+            <div id="dropzone" onclick="document.getElementById('arquivoSoltar').click()" style="border:2px dashed #8b5cf6; border-radius:10px; padding:1.5rem; text-align:center; cursor:pointer; background:rgba(139,92,246,0.05); margin-bottom:0.8rem; transition:all 0.2s;">
+                <div style="font-size:2rem; margin-bottom:0.3rem;">📎</div>
+                <div style="font-weight:600; color:#8b5cf6;">Clique ou arraste seu extrato aqui</div>
+                <div style="font-size:0.8rem; color:#94a3b8; margin-top:0.3rem;">PDF, foto (print) — qualquer banco</div>
+            </div>
+
+            <input type="file" id="arquivoSoltar" accept="image/*,.pdf" style="display:none;" onchange="soltarExtrato(event)">
+            <div id="arquivoInfo" style="display:none; padding:0.8rem; background:rgba(139,92,246,0.15); border-radius:8px; margin-bottom:0.8rem;">
+                <div id="arquivoNome" style="font-weight:600; color:#fff;"></div>
+                <div id="arquivoTamanho" style="font-size:0.8rem; color:#94a3b8;"></div>
+            </div>
+            <button id="btnEnviarZapia" onclick="enviarParaZapia()" style="display:none; width:100%; padding:0.85rem; background:linear-gradient(135deg, #8b5cf6, #7c3aed); color:#fff; border:none; border-radius:8px; font-weight:600; cursor:pointer; font-size:0.95rem;">
+                🚀 Enviar pro Zapia processar
+            </button>
+        </div>
+
+        <div style="background:rgba(59, 130, 246, 0.1); border:1px solid #3b82f6; border-radius:10px; padding:1rem;">
+            <h3 style="margin:0 0 0.5rem; color:#3b82f6;">📋 Opção 3: Colar texto do extrato</h3>
+            <p style="font-size:0.85rem; color:#94a3b8; margin:0 0 0.8rem;">Copia o texto do extrato (ou de notificação) e cola aqui embaixo.</p>
+            <textarea id="textoColar" rows="4" placeholder="Cole aqui o texto do extrato, notificação do banco, ou transação..." style="width:100%; padding:0.5rem; background:var(--bg-card); color:var(--text); border:1px solid var(--border); border-radius:8px; font-family:monospace; font-size:0.85rem; resize:vertical;"></textarea>
+            <button onclick="colarTexto()" style="width:100%; margin-top:0.5rem; padding:0.75rem; background:#3b82f6; color:#fff; border:none; border-radius:8px; font-weight:600; cursor:pointer;">📋 Processar texto colado</button>
+        </div>
+
+        <input type="file" id="importFoto" accept="image/*,.heic,.heif" style="display:none;" onchange="processarFotoExtrato(event)">
+        <input type="file" id="importPDF" accept=".pdf,application/pdf" style="display:none;" onchange="processarPDFExtrato(event)">
+        <input type="file" id="importCSV" accept=".csv,.tsv,text/csv,.xlsx,.xls,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" style="display:none;" onchange="processarCSVExtrato(event)">
+        <input type="file" id="importJSON" accept=".json,application/json" style="display:none;" onchange="importarJSON(event)">
+
+        <div id="importStatus" style="display:none; margin-top:1rem; padding:1rem; background:var(--bg-card); border-radius:8px;">
+            <div id="importProgress" style="margin-bottom:0.5rem; color:#fbbf24;"></div>
+            <div id="importResult"></div>
+        </div>
+
+        <div id="importPreview" style="display:none; margin-top:1rem;"></div>
+    </div>
+</div>
+
+<!-- MODAL: COMO USAR ZAPIA -->
+<div class="modal" id="modalZapia">
+    <div class="modal-content">
+        <button class="modal-close" onclick="closeModal('modalZapia')">×</button>
+        <h2>🤖 Importar com Zapia (IA)</h2>
+        <p style="color:#94a3b8; font-size:0.9rem;">Funciona com <b>qualquer banco</b>, <b>qualquer formato</b>, <b>qualquer foto</b>.</p>
+
+        <div style="background:var(--bg-card); border-radius:10px; padding:1.2rem; margin:1rem 0;">
+            <h3 style="margin:0 0 1rem;">📋 Passo a passo:</h3>
+            <ol style="line-height:1.8; padding-left:1.2rem;">
+                <li>Tira print ou foto do extrato do banco</li>
+                <li>Abre o <b>Zapia</b> e manda a foto aqui neste chat</li>
+                <li>Eu processo e devolvo um arquivo <b>JSON</b> pronto</li>
+                <li>Salva o arquivo no celular</li>
+                <li>Clica no botão abaixo e seleciona o arquivo</li>
+            </ol>
+        </div>
+
+        <div style="display:flex; gap:0.5rem; margin-top:1rem;">
+            <button onclick="abrirImportJSON()" style="flex:1; padding:0.85rem; background:linear-gradient(135deg, #8b5cf6, #7c3aed); color:#fff; border:none; border-radius:8px; font-weight:600; cursor:pointer; font-size:0.95rem;">📁 Selecionar JSON do Zapia</button>
+        </div>
+
+        <p style="font-size:0.8rem; color:#94a3b8; text-align:center; margin-top:1rem;">⏱️ Processamento leva ~10-30 segundos</p>
+    </div>
+</div>
+
+<!-- MODAL: TRANSACAO -->
+<div class="modal" id="modalTransacao">
+    <div class="modal-content">
+        <button class="modal-close" onclick="closeModal('modalTransacao')">×</button>
+        <h2 id="modalTransacaoTitulo">Nova transação</h2>
+        <form id="formTransacao" onsubmit="return salvarTransacao(event)">
+            <input type="hidden" id="txId">
+            <input type="hidden" id="txTipo">
+            <div class="form-group">
+                <label>Tipo</label>
+                <div class="type-toggle">
+                    <button type="button" class="type-btn active" data-tipo="receita" onclick="setTipoTransacao('receita')">📈 Receita</button>
+                    <button type="button" class="type-btn" data-tipo="despesa" onclick="setTipoTransacao('despesa')">📉 Despesa</button>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Descrição</label>
+                <input type="text" id="txDescricao" placeholder="Ex: Salário, Aluguel..." required>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Valor (R$)</label>
+                    <input type="number" id="txValor" step="0.01" min="0.01" placeholder="0,00" required>
+                </div>
+                <div class="form-group">
+                    <label>Data</label>
+                    <input type="date" id="txData" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Categoria</label>
+                <select id="txCategoria" required></select>
+            </div>
+            <div class="form-group">
+                <label>Observação (opcional)</label>
+                <textarea id="txObs" rows="2" placeholder="Detalhes..."></textarea>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn-secondary" onclick="closeModal('modalTransacao')">Cancelar</button>
+                <button type="submit" class="btn-primary">💾 Salvar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- MODAL: ORCAMENTO -->
+<div class="modal" id="modalOrcamento">
+    <div class="modal-content">
+        <button class="modal-close" onclick="closeModal('modalOrcamento')">×</button>
+        <h2>Novo orçamento</h2>
+        <form onsubmit="return salvarOrcamento(event)">
+            <div class="form-group">
+                <label>Categoria</label>
+                <select id="orcCat" required></select>
+            </div>
+            <div class="form-group">
+                <label>Limite mensal (R$)</label>
+                <input type="number" id="orcLimite" step="0.01" min="0" required>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn-secondary" onclick="closeModal('modalOrcamento')">Cancelar</button>
+                <button type="submit" class="btn-primary">💾 Salvar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- MODAL: META -->
+<div class="modal" id="modalMeta">
+    <div class="modal-content">
+        <button class="modal-close" onclick="closeModal('modalMeta')">×</button>
+        <h2>Nova meta</h2>
+        <form onsubmit="return salvarMeta(event)">
+            <div class="form-group">
+                <label>Nome da meta</label>
+                <input type="text" id="metaNome" placeholder="Ex: Reserva de emergência" required>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Valor alvo (R$)</label>
+                    <input type="number" id="metaAlvo" step="0.01" min="0" required>
+                </div>
+                <div class="form-group">
+                    <label>Já economizado (R$)</label>
+                    <input type="number" id="metaAtual" step="0.01" min="0" value="0">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Prazo (opcional)</label>
+                <input type="date" id="metaPrazo">
+            </div>
+            <div class="form-group">
+                <label>Ícone</label>
+                <select id="metaIcone">
+                    <option value="🎯">🎯</option>
+                    <option value="🏠">🏠 Casa</option>
+                    <option value="🚗">🚗 Carro</option>
+                    <option value="✈️">✈️ Viagem</option>
+                    <option value="💻">💻 Eletrônico</option>
+                    <option value="🎓">🎓 Educação</option>
+                    <option value="💍">💍 Casamento</option>
+                    <option value="🛡️">🛡️ Emergência</option>
+                </select>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn-secondary" onclick="closeModal('modalMeta')">Cancelar</button>
+                <button type="submit" class="btn-primary">💾 Salvar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- MODAL: ADICIONAR/SUBTRAIR SALDO NA META -->
+<div class="modal" id="modalSaldoMeta">
+    <div class="modal-content">
+        <button class="modal-close" onclick="closeModal('modalSaldoMeta')">×</button>
+        <h2 id="metaSaldoTitulo">💰 Adicionar saldo</h2>
+        <form onsubmit="return salvarSaldoMeta(event)">
+            <div class="form-group">
+                <label>Meta</label>
+                <div id="metaSaldoNome" style="font-size:1.1rem;font-weight:600;color:var(--primary);"></div>
+                <div style="font-size:0.85rem;color:var(--gray-metal);margin-top:4px;">Saldo atual: <span id="metaSaldoAtual"></span></div>
+            </div>
+            <div class="form-group">
+                <label id="metaSaldoLabel">Valor a adicionar (R$)</label>
+                <input type="number" id="metaSaldoValor" step="0.01" min="0.01" placeholder="Ex: 100" required>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn-secondary" onclick="closeModal('modalSaldoMeta')">Cancelar</button>
+                <button type="submit" class="btn-primary" id="metaSaldoBotao">💰 Adicionar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- MODAL: CATEGORIA -->
+<div class="modal" id="modalCategoria">
+    <div class="modal-content">
+        <button class="modal-close" onclick="closeModal('modalCategoria')">×</button>
+        <h2>Nova categoria</h2>
+        <form onsubmit="return salvarCategoria(event)">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Nome</label>
+                    <input type="text" id="catNome" required>
+                </div>
+                <div class="form-group">
+                    <label>Ícone</label>
+                    <input type="text" id="catIcone" placeholder="🍔" maxlength="2" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Cor</label>
+                <input type="color" id="catCor" value="#10b981">
+            </div>
+            <div class="form-group">
+                <label>Tipo</label>
+                <select id="catTipo">
+                    <option value="despesa">Despesa</option>
+                    <option value="receita">Receita</option>
+                    <option value="ambos">Ambos</option>
+                </select>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn-secondary" onclick="closeModal('modalCategoria')">Cancelar</button>
+                <button type="submit" class="btn-primary">💾 Salvar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="modal" id="modalBancos">
+    <div class="modal-content modal-large">
+        <button class="modal-close" onclick="closeModal('modalBancos')">×</button>
+        <h2>🏦 Conectar Banco (Open Finance)</h2>
+        <p style="color:#94a3b8; font-size:0.9rem; margin-bottom:1rem;">Selecione seu banco. Você será redirecionado pro site oficial pra autorizar o compartilhamento de dados (regulado pelo Banco Central).</p>
+        <div id="bancosDisponiveis" style="max-height:60vh; overflow-y:auto;">
+            <p style="text-align:center; color:#94a3b8;">🔄 Carregando...</p>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: CARTAO -->
+<div class="modal" id="modalCartao">
+    <div class="modal-content">
+        <button class="modal-close" onclick="closeModal('modalCartao')">×</button>
+        <h2 id="modalCartaoTitulo">💳 Novo Cartão</h2>
+        <form id="formCartao" onsubmit="salvarCartao(event)" style="display:flex; flex-direction:column; gap:0.8rem;">
+            <input type="hidden" id="cartaoId">
+            <div class="form-group">
+                <label>Nome do cartão (ex: Nubank, Inter, Santander)</label>
+                <input type="text" id="cartaoNome" required placeholder="Ex: Nubank">
+            </div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.8rem;">
+                <div class="form-group">
+                    <label>Últimos 4 dígitos</label>
+                    <input type="text" id="cartaoFinal" maxlength="4" placeholder="1234">
+                </div>
+                <div class="form-group">
+                    <label>Bandeira</label>
+                    <select id="cartaoBandeira">
+                        <option value="visa">Visa</option>
+                        <option value="master">Mastercard</option>
+                        <option value="elo">Elo</option>
+                        <option value="amex">American Express</option>
+                        <option value="hipercard">Hipercard</option>
+                        <option value="outro">Outro</option>
+                    </select>
+                </div>
+            </div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.8rem;">
+                <div class="form-group">
+                    <label>Limite (R$)</label>
+                    <input type="number" id="cartaoLimite" step="0.01" placeholder="5000.00">
+                </div>
+                <div class="form-group">
+                    <label>Dia do fechamento</label>
+                    <input type="number" id="cartaoFecha" min="1" max="31" placeholder="15">
+                </div>
+            </div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.8rem;">
+                <div class="form-group">
+                    <label>Dia do vencimento</label>
+                    <input type="number" id="cartaoVence" min="1" max="31" placeholder="25">
+                </div>
+                <div class="form-group">
+                    <label>Cor (visual)</label>
+                    <input type="color" id="cartaoCor" value="#7c3aed">
+                </div>
+            </div>
+            <div style="display:flex; gap:0.5rem; justify-content:flex-end; margin-top:0.5rem;">
+                <button type="button" class="btn-secondary" onclick="closeModal('modalCartao')">Cancelar</button>
+                <button type="submit" class="btn-primary">💾 Salvar Cartão</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- MODAL: COMPRA NO CARTAO -->
+<div class="modal" id="modalCompraCartao">
+    <div class="modal-content">
+        <button class="modal-close" onclick="closeModal('modalCompraCartao')">×</button>
+        <h2>🛒 Nova Compra no Cartão</h2>
+        <form id="formCompraCartao" onsubmit="salvarCompraCartao(event)" style="display:flex; flex-direction:column; gap:0.8rem;">
+            <div class="form-group">
+                <label>Cartão</label>
+                <select id="compraCartaoId" required></select>
+            </div>
+            <div class="form-group">
+                <label>Descrição</label>
+                <input type="text" id="compraDescricao" required placeholder="Ex: iFood, Mercado Livre...">
+            </div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.8rem;">
+                <div class="form-group">
+                    <label>Valor (R$)</label>
+                    <input type="number" id="compraValor" step="0.01" required placeholder="99.90">
+                </div>
+                <div class="form-group">
+                    <label>Data da compra</label>
+                    <input type="date" id="compraData" required>
+                </div>
+            </div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.8rem;">
+                <div class="form-group">
+                    <label>Categoria</label>
+                    <select id="compraCategoria"></select>
+                </div>
+                <div class="form-group">
+                    <label>Parcelas (1 = à vista)</label>
+                    <input type="number" id="compraParcelas" min="1" max="48" value="1">
+                </div>
+            </div>
+            <div style="display:flex; gap:0.5rem; justify-content:flex-end; margin-top:0.5rem;">
+                <button type="button" class="btn-secondary" onclick="closeModal('modalCompraCartao')">Cancelar</button>
+                <button type="submit" class="btn-primary">💾 Salvar Compra</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- MODAL: COMPROMISSO / DESPESA FUTURA -->
+<div class="modal" id="modalCompromisso">
+    <div class="modal-content">
+        <button class="modal-close" onclick="closeModal('modalCompromisso')">×</button>
+        <h2 id="modalCompromissoTitulo">📅 Nova Despesa Futura</h2>
+        <form id="formCompromisso" onsubmit="salvarCompromisso(event)" style="display:flex; flex-direction:column; gap:0.8rem;">
+            <input type="hidden" id="compromissoId">
+            <div class="form-group">
+                <label>Descrição (ex: Financiamento carro, Curso X, Seguro)</label>
+                <input type="text" id="compromissoDescricao" required placeholder="Ex: Financiamento HB20">
+            </div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.8rem;">
+                <div class="form-group">
+                    <label>Valor da parcela (R$)</label>
+                    <input type="number" id="compromissoValor" step="0.01" required placeholder="850.00">
+                </div>
+                <div class="form-group">
+                    <label>Total de parcelas</label>
+                    <input type="number" id="compromissoParcelas" min="1" max="360" required value="12">
+                </div>
+            </div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.8rem;">
+                <div class="form-group">
+                    <label>1º vencimento</label>
+                    <input type="date" id="compromissoInicio" required>
+                </div>
+                <div class="form-group">
+                    <label>Dia do mês (próx. venc.)</label>
+                    <input type="number" id="compromissoDia" min="1" max="31" required value="10">
+                </div>
+            </div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.8rem;">
+                <div class="form-group">
+                    <label>Categoria</label>
+                    <select id="compromissoCategoria"></select>
+                </div>
+                <div class="form-group">
+                    <label>Tipo</label>
+                    <select id="compromissoTipo">
+                        <option value="parcelado">Parcelado (fixo, mensal)</option>
+                        <option value="longo_prazo">Longo prazo (anual/semestral)</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Observação (opcional)</label>
+                <input type="text" id="compromissoObs" placeholder="Detalhes extras...">
+            </div>
+            <div style="display:flex; gap:0.5rem; justify-content:flex-end; margin-top:0.5rem;">
+                <button type="button" class="btn-secondary" onclick="closeModal('modalCompromisso')">Cancelar</button>
+                <button type="submit" class="btn-primary">💾 Salvar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="app.js?v=32"></script>
+
+<!-- Chat Modal (Assistente Financeiro com IA) -->
+<div id="chatModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.7); z-index:1000; align-items:center; justify-content:center;">
+    <div style="background:var(--bg); border-radius:16px; width:min(560px, 95vw); height:min(85vh, 720px); display:flex; flex-direction:column; overflow:hidden; box-shadow:0 20px 60px rgba(0,0,0,0.5);">
+        <div style="background:linear-gradient(135deg, #7c3aed, #3b82f6); padding:1rem 1.2rem; color:white; display:flex; justify-content:space-between; align-items:center;">
+            <div>
+                <div style="font-weight:700; font-size:1.05rem;">🤖 Assistente Financeiro</div>
+                <div style="font-size:0.75rem; opacity:0.85;">Powered by Groq · Llama 3.3 70B</div>
+            </div>
+            <div style="display:flex; gap:0.4rem;">
+                <button onclick="limparChat()" style="background:rgba(255,255,255,0.2); color:white; border:none; padding:0.3rem 0.6rem; border-radius:6px; cursor:pointer; font-size:0.75rem;" title="Limpar conversa">🧹</button>
+                <button onclick="fecharChat()" style="background:rgba(255,255,255,0.2); color:white; border:none; width:30px; height:30px; border-radius:50%; cursor:pointer; font-size:1.1rem;">×</button>
+            </div>
+        </div>
+        <div id="chatMessages" style="flex:1; overflow-y:auto; padding:1rem; background:var(--bg-card);"></div>
+        <div id="chatAnexoPreview" style="display:none; padding:0.5rem 1rem; background:var(--bg-2); border-top:1px solid var(--border); font-size:0.8rem; color:#94a3b8; align-items:center; justify-content:space-between;">
+            <span id="chatAnexoNome">📎 arquivo.pdf</span>
+            <button onclick="removerChatAnexo()" style="background:transparent; color:#ef4444; border:none; cursor:pointer; font-size:1rem;">×</button>
+        </div>
+        <div style="padding:0.7rem 1rem; background:var(--bg-2); border-top:1px solid var(--border); display:flex; gap:0.5rem; align-items:center;">
+            <input type="file" id="chatAnexo" accept="image/*,application/pdf" style="display:none;" onchange="anexarAoChat(event)">
+            <button onclick="document.getElementById('chatAnexo').click()" style="background:linear-gradient(135deg,#7c3aed,#3b82f6); color:white; border:none; padding:0.6rem 0.7rem; border-radius:8px; cursor:pointer; font-size:1rem;" title="Anexar foto ou PDF do extrato">📎</button>
+            <input type="text" id="chatInput" placeholder="Pergunte algo ou cole um extrato..." style="flex:1; padding:0.6rem 0.8rem; background:var(--bg); border:1px solid var(--border); color:var(--text); border-radius:8px;" onkeydown="if(event.key==='Enter') enviarMensagemChat()">
+            <button onclick="enviarMensagemChat()" style="background:linear-gradient(135deg,#10b981,#059669); color:white; border:none; padding:0.6rem 0.9rem; border-radius:8px; cursor:pointer; font-weight:600;">➤</button>
+        </div>
+    </div>
+</div>
+
+<!-- Carrega libs pra OCR e PDF (com fallback se offline) -->
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
+
+<!-- Botão flutuante IA (FAB) - canto inferior direito -->
+<button class="fab" onclick="document.getElementById('chatModal').style.display='flex';" title="Assistente IA" style="position:fixed; bottom:24px; right:24px; width:60px; height:60px; border-radius:50%; background:linear-gradient(135deg, #7c3aed, #3b82f6); color:white; border:none; box-shadow:0 6px 20px rgba(124,58,237,0.4); font-size:1.8rem; cursor:pointer; z-index:999; transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">🤖</button>
+
+<script>
+// Fecha sidebar quando trocar de tab no mobile
+(function() {
+    const fecharSidebar = () => {
+        document.querySelector('.sidebar')?.classList.remove('open');
+        document.querySelector('.sidebar-overlay')?.classList.remove('open');
+    };
+    document.addEventListener('click', (e) => {
+        if (e.target.closest('.nav-item')) fecharSidebar();
+    });
+})();
+</script>
+</body>
+</html>
+>
