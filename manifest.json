@@ -1,0 +1,44 @@
+{
+  "name": "MeuFinanças - Aroeira G Fitness",
+  "short_name": "MeuFinanças",
+  "description": "Gestão financeira pessoal e da academia Aroeira G Fitness",
+  "start_url": "https://meu-finan-as.onrender.com/dashboard.html",
+  "scope": "https://meu-finan-as.onrender.com/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0a0a0a",
+  "theme_color": "#f59e0b",
+  "lang": "pt-BR",
+  "dir": "ltr",
+  "categories": [
+    "finance",
+    "productivity",
+    "business"
+  ],
+  "icons": [
+    {
+      "src": "https://meu-finan-as.onrender.com/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "https://meu-finan-as.onrender.com/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "https://meu-finan-as.onrender.com/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "https://meu-finan-as.onrender.com/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
