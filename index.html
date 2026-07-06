@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' https:; img-src 'self' data: blob: https:; media-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'">
+<meta http-equiv="X-Content-Type-Options" content="nosniff">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<meta name="theme-color" content="#f59e0b">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="MeuFinanças">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="application-name" content="MeuFinanças">
+<meta name="description" content="Gestão financeira pessoal e da academia Aroeira G Fitness">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<title>MeuFinanças - Login</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="login-body">
+    <div class="login-container">
+        <div class="login-card">
+            <div class="login-header">
+                <div class="logo-icon">💰</div>
+                <h1>MeuFinanças</h1>
+            </div>
+            <div id="formLoginContainer">
+                <form id="formLogin" class="login-form">
+                    <div class="form-group">
+                        <label for="loginEmail">E-mail</label>
+                        <input type="email" id="loginEmail" placeholder="seu@email.com" required autocomplete="email">
+                    </div>
+                    <div class="form-group">
+                        <label for="loginSenha">Senha</label>
+                        <input type="password" id="loginSenha" placeholder="••••••" required autocomplete="current-password">
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">Entrar</button>
+                    <button type="button" class="btn btn-link" onclick="abrirEsqueciSenha()" style="background:none; border:none; color:#f59e0b; cursor:pointer; margin-top:0.5rem; font-size:0.9rem;">🔑 Esqueci minha senha</button>
+                </form>
+                <div id="esqueciSenhaBox" style="display:none; margin-top:1rem; padding:1rem; background:rgba(245,158,11,0.1); border:1px solid #f59e0b; border-radius:8px;">
+                    <p style="color:#cbd5e1; font-size:0.9rem; margin:0 0 0.8rem 0;">Para recuperar/alterar sua senha, entre em contato com o desenvolvedor:</p>
+                    <a id="btnWhatsAppEsqueci" href="#" target="_blank" class="btn btn-primary btn-block" style="background:#10b981; text-decoration:none; display:flex; align-items:center; justify-content:center; gap:0.5rem;">💬 Falar no WhatsApp</a>
+                    <button type="button" onclick="fecharEsqueciSenha()" style="background:none; border:none; color:#94a3b8; cursor:pointer; margin-top:0.5rem; font-size:0.85rem; width:100%;">← Voltar pro login</button>
+                </div>
+            </div>
+            <div id="telaBloqueio" style="display:none; text-align:center;">
+                <div style="font-size:4rem; margin-bottom:1rem;">🔒</div>
+                <h2 style="color:#ef4444; margin:0 0 0.8rem 0;">Acesso Bloqueado</h2>
+                <p style="color:#cbd5e1; font-size:1rem; line-height:1.5; margin:0 0 1rem 0;">
+                    Acesso bloqueado, entre em contato com o desenvolvedor para regularizar o acesso.
+                </p>
+                <p id="motivoBloqueioTexto" style="color:#94a3b8; font-size:0.9rem; font-style:italic; margin:0 0 1.5rem 0; min-height:1.2rem;"></p>
+                <a id="btnWhatsAppBloqueio" href="#" target="_blank" class="btn btn-primary btn-block" style="background:#10b981; text-decoration:none; display:flex; align-items:center; justify-content:center; gap:0.5rem;">💬 Falar com o desenvolvedor</a>
+            </div>
+            <div class="login-footer">
+                <p class="rights">Todos os direitos reservados a <strong>Fábio Júnior</strong>. Proprietário e desenvolvedor do MeuFinanças.</p>
+                <p class="version">Acesso restrito · v1.5.0</p>
+            </div>
+        </div>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>
+
